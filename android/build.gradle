@@ -31,11 +31,16 @@ android {
 
 repositories {
     mavenCentral()
+    maven { url 'https://www.jitpack.io' }
+    maven { url 'https://oss.sonatype.org/content/repositories/releases/' }
+    google()
 }
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
     implementation group: 'org.jetbrains', name: 'annotations', version: '13.0'
-    implementation 'io.tus.java.client:tus-java-client:0.4.2'
-    implementation 'io.tus.android.client:tus-android-client:0.1.9'
+    implementation('com.github.tus:tus-android-client:0.1.9') {
+        exclude group: 'io.tus.java.client', module: 'tus-java-client'
+    }
+    implementation 'com.github.tus:tus-java-client:0.4.2'
 }
