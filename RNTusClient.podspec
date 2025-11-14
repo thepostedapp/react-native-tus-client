@@ -15,6 +15,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '12.0'
 
   s.dependency 'React-Core'
-  s.dependency 'TUSKit', :git => 'https://github.com/thepostedapp/TUSKit.git', :tag => '1.4.3'
+  s.dependency 'TUSKit'
 
 end
