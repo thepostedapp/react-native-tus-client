@@ -138,19 +138,32 @@ public class RNTusClientModule extends ReactContextBaseJavaModule {
 
     protected void makeAttempt() throws ProtocolException, IOException {
       uploader = client.resumeOrCreateUpload(upload);
-      uploader.setChunkSize(1024);
+      uploader.setChunkSize(512 * 1024);
       uploader.setRequestPayloadSize(10 * 1024 * 1024);
 
+      long totalBytes = upload.getSize();
+      long lastProgressTime = 0;
+
       do {
-        long totalBytes = upload.getSize();
-        long bytesUploaded = uploader.getOffset();
-        WritableMap params = Arguments.createMap();
-        params.putString("uploadId", uploadId);
-        params.putDouble("bytesWritten", bytesUploaded);
-        params.putDouble("bytesTotal", totalBytes);
-        reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(ON_PROGRESS, params);
-      }while(uploader.uploadChunk() > -1 && !shouldFinish);
+        long now = System.currentTimeMillis();
+        if (now - lastProgressTime >= 250) {
+          lastProgressTime = now;
+          long bytesUploaded = uploader.getOffset();
+          WritableMap params = Arguments.createMap();
+          params.putString("uploadId", uploadId);
+          params.putDouble("bytesWritten", bytesUploaded);
+          params.putDouble("bytesTotal", totalBytes);
+          reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                  .emit(ON_PROGRESS, params);
+        }
+      } while(uploader.uploadChunk() > -1 && !shouldFinish);
+
+      WritableMap finalParams = Arguments.createMap();
+      finalParams.putString("uploadId", uploadId);
+      finalParams.putDouble("bytesWritten", totalBytes);
+      finalParams.putDouble("bytesTotal", totalBytes);
+      reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+              .emit(ON_PROGRESS, finalParams);
 
       uploader.finish();
     }
